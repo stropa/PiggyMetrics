@@ -16,7 +16,6 @@ import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.security.oauth2.client.feign.OAuth2FeignRequestInterceptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -32,9 +31,11 @@ import org.stropa.autodoc.engine.AutodocJavaEngine;
 import org.stropa.autodoc.engine.Item;
 import org.stropa.autodoc.reporters.DockerContainerDescriber;
 import org.stropa.autodoc.reporters.HostnameDescriber;
+import org.stropa.autodoc.spring.config.AutodocProperties;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootApplication
 @EnableResourceServer
@@ -81,11 +82,26 @@ public class AccountApplication extends ResourceServerConfigurerAdapter implemen
 				.anyRequest().authenticated();
 	}
 
+	@Bean
+	@ConfigurationProperties(prefix = "autodoc")
+	AutodocProperties autodocProperties() {
+		return new AutodocProperties();
+	}
+
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		Config autodocConfig = ConfigFactory.load("autodoc.conf");
+
+		Map<String, String> autodoc = autodocProperties().autodoc();
+		Config autodocConfig;
+		if (autodoc.isEmpty()) {
+			autodocConfig = ConfigFactory.load();
+		} else {
+			autodocConfig = ConfigFactory.parseMap(autodoc);
+		}
+
 		AutodocJavaEngine doc = new AutodocJavaEngine(autodocConfig);
+
 		doc.addInfo(new HostnameDescriber().report(), Collections.emptyList());
 
 		List<Item> items = new DockerContainerDescriber().report();

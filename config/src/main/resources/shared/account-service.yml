@@ -19,3 +19,9 @@ spring:
 server:
   context-path: /accounts
   port: 6000
+
+autodoc:
+  storage:
+    type: es
+    elasticsearch.host: elk
+    elasticsearch.port: 9200
