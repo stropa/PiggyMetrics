@@ -29,6 +29,8 @@ services:
     build: account-service
     ports:
       - 6000:6000
+    environment:
+      docker-container-name: account-service
 
   account-mongodb:
     build: mongodb

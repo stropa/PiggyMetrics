@@ -168,3 +168,8 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+
+  elk:
+    image: sebp/elk
+      ports:
+      - 5601:5601  9200:9200  5044:5044

@@ -1,7 +1,10 @@
 package com.piggymetrics.account;
 
 import com.piggymetrics.account.service.security.CustomUserInfoTokenServices;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import feign.RequestInterceptor;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,6 +14,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.security.oauth2.client.feign.OAuth2FeignRequestInterceptor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -22,6 +28,13 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.stropa.autodoc.engine.AutodocJavaEngine;
+import org.stropa.autodoc.engine.Item;
+import org.stropa.autodoc.reporters.DockerContainerDescriber;
+import org.stropa.autodoc.reporters.HostnameDescriber;
+
+import java.util.Collections;
+import java.util.List;
 
 @SpringBootApplication
 @EnableResourceServer
@@ -31,7 +44,7 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableConfigurationProperties
 @Configuration
-public class AccountApplication extends ResourceServerConfigurerAdapter {
+public class AccountApplication extends ResourceServerConfigurerAdapter implements ApplicationContextAware {
 
 	@Autowired
 	private ResourceServerProperties sso;
@@ -66,5 +79,18 @@ public class AccountApplication extends ResourceServerConfigurerAdapter {
 		http.authorizeRequests()
 				.antMatchers("/" , "/demo").permitAll()
 				.anyRequest().authenticated();
+	}
+
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		Config autodocConfig = ConfigFactory.load("autodoc.conf");
+		AutodocJavaEngine doc = new AutodocJavaEngine(autodocConfig);
+		doc.addInfo(new HostnameDescriber().report(), Collections.emptyList());
+
+		List<Item> items = new DockerContainerDescriber().report();
+		doc.addInfo(items, Collections.emptyList());
+
+		doc.writeSnapshot();
 	}
 }
