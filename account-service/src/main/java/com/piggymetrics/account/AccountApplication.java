@@ -105,30 +105,12 @@ public class AccountApplication extends ResourceServerConfigurerAdapter implemen
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
-		System.out.println(autodocStorageType);
-
 		Map<String, Object> context = new HashMap<>();
 		context.put("applicationContext", applicationContext);
 
-		AutodocJavaEngine doc = new AutodocJavaEngine(context);
-		//doc.defaultDocs();
-
-		doc.doc("hostname");
-		doc.doc("docker-container");
-		doc.doc("application");
-
-		Optional<Item> docker = doc.node("docker-container");
-		Optional<Item> application = doc.node("_type:spring-application");
-		Optional<Item> host = doc.node("_type:host");
-
-		if (docker.isPresent()) {
-			doc.link(application, "runs in", docker);
-			doc.link(docker, "deployed on", host);
-		} else {
-			doc.link(application, "deployed on", host);
-		}
-
-		doc.writeDocs(new FileStorage("autodoc.log.json"));
+		new AutodocJavaEngine(context)
+				.describeSpringApplication(applicationContext, new FileStorage("autodoc.log.json"));
 	}
+
 
 }
