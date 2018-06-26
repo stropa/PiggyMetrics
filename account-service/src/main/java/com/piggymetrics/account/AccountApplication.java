@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
@@ -59,7 +60,7 @@ public class AccountApplication extends ResourceServerConfigurerAdapter implemen
 	@Autowired
 	private AutodocProperties autodocProperties;
 
-	//@Value("${autodoc.storage.type}")
+	@Value("${autodoc.storage.type}")
 	private String autodocStorageType;
 
 	public static void main(String[] args) {
@@ -127,32 +128,7 @@ public class AccountApplication extends ResourceServerConfigurerAdapter implemen
 			doc.link(application, "deployed on", host);
 		}
 
-
-
 		doc.writeDocs(new FileStorage("autodoc.log.json"));
-
-
-
 	}
 
-
-
-
-
-
-
-	private void diveIntoPropertySource(Map<String, Object> map, PropertySource propertySource, List<PropertySource> seenAlready) {
-		if (propertySource instanceof MapPropertySource) {
-            map.putAll(((MapPropertySource) propertySource).getSource());
-        } else if (propertySource instanceof CompositePropertySource) {
-			for (PropertySource ps : ((CompositePropertySource) propertySource).getPropertySources()) {
-				if (seenAlready.contains(ps)) {
-					// skip
-				} else {
-					seenAlready.add(ps);
-					diveIntoPropertySource(map, ps, seenAlready);
-				}
-			}
-		}
-	}
 }
